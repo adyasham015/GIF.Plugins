@@ -109,8 +109,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IntegrationDeletionLogPresenter.cs" />
-    <Compile Include="IntegrationLogsPresenter.cs" />
+    <Compile Include="DeleteLog.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
