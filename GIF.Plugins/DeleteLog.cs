@@ -5,74 +5,67 @@ namespace Plugins
 {
     public class AgreementDeleteLogPlugin : IPlugin
     {
+        // Agreement entity and delete log entity names
         private const string AgreementEntityName = "msdyn_agreement";
         private const string DeleteLogEntityName = "gif_deletelog";
 
-        // OptionSet value for entity name (custom OptionSet)
+        // OptionSet value for msdyn_agreement in gif_entityname
         private const int AgreementOptionSetValue = 805640009;
 
         public void Execute(IServiceProvider serviceProvider)
         {
-            // Get services
+            // Get required services
             var context = (IPluginExecutionContext)serviceProvider.GetService(typeof(IPluginExecutionContext));
             var serviceFactory = (IOrganizationServiceFactory)serviceProvider.GetService(typeof(IOrganizationServiceFactory));
-            var trace = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
+            var tracingService = (ITracingService)serviceProvider.GetService(typeof(ITracingService));
 
-            trace.Trace("AgreementDeleteLogPlugin execution started.");
+            tracingService.Trace("AgreementDeleteLogPlugin started.");
 
-            // Only run on Delete
+            // Only proceed if message is Delete
             if (!string.Equals(context.MessageName, "Delete", StringComparison.OrdinalIgnoreCase))
             {
-                trace.Trace($"MessageName: {context.MessageName}. Exiting plugin.");
+                tracingService.Trace($"Message {context.MessageName} is not Delete. Exiting plugin.");
                 return;
             }
 
-            // Ensure Target exists and is an EntityReference
+            // Validate target
             if (!(context.InputParameters.TryGetValue("Target", out var targetObj) && targetObj is EntityReference target))
             {
-                trace.Trace("Target parameter is missing or not an EntityReference. Exiting.");
+                tracingService.Trace("Target parameter missing or invalid. Exiting plugin.");
                 return;
             }
 
+            // Only run for Agreement entity
             if (!string.Equals(target.LogicalName, AgreementEntityName, StringComparison.OrdinalIgnoreCase))
             {
-                trace.Trace($"Target entity: {target.LogicalName}. Exiting plugin.");
+                tracingService.Trace($"Target entity {target.LogicalName} is not {AgreementEntityName}. Exiting plugin.");
                 return;
             }
 
             try
             {
+                // Use context.UserId to ensure proper permissions
                 var service = serviceFactory.CreateOrganizationService(context.UserId);
 
-                // Create delete log entity
-                var deleteLog = new Entity(DeleteLogEntityName);
-
-                // Assign fields carefully
-                if (deleteLog.Attributes.Contains("gif_entityid"))
+                // Create delete log record
+                var deleteLog = new Entity(DeleteLogEntityName)
                 {
-                    // If field is Lookup type
-                    deleteLog["gif_entityid"] = new EntityReference(AgreementEntityName, target.Id);
-                }
-                else
-                {
-                    // If field is plain GUID
-                    deleteLog["gif_entityid"] = target.Id;
-                }
-
-                deleteLog["gif_entityname"] = new OptionSetValue(AgreementOptionSetValue);
-                deleteLog["gif_name"] = $"Agreement Deleted - {target.Id}";
-                deleteLog["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId);
+                    ["gif_entityid"] = target.Id, // plain GUID
+                    ["gif_entityname"] = new OptionSetValue(AgreementOptionSetValue),
+                    ["gif_name"] = $"Agreement Deleted - {target.Id}",
+                    ["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId)
+                };
 
                 service.Create(deleteLog);
-                trace.Trace($"Delete log created for Agreement ID: {target.Id}");
+                tracingService.Trace($"Delete log created for Agreement ID: {target.Id}");
             }
             catch (Exception ex)
             {
-                trace.Trace($"Error creating delete log: {ex.Message}");
-                throw new InvalidPluginExecutionException("Error creating Agreement delete log.", ex);
+                tracingService.Trace($"Error creating delete log: {ex.Message}");
+                throw new InvalidPluginExecutionException("Error while creating delete log record.", ex);
             }
 
-            trace.Trace("AgreementDeleteLogPlugin completed.");
+            tracingService.Trace("AgreementDeleteLogPlugin completed successfully.");
         }
     }
 }
