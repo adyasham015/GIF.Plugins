@@ -20,24 +20,23 @@ namespace Plugins
 
             trace.Trace("AgreementDeleteLogPlugin execution started.");
 
-            // Only execute on Delete
+            // Only run on Delete
             if (!string.Equals(context.MessageName, "Delete", StringComparison.OrdinalIgnoreCase))
             {
-                trace.Trace($"MessageName: {context.MessageName}. Exiting plugin (only runs on Delete).");
+                trace.Trace($"MessageName: {context.MessageName}. Exiting plugin.");
                 return;
             }
 
-            // Validate target
+            // Ensure Target exists and is an EntityReference
             if (!(context.InputParameters.TryGetValue("Target", out var targetObj) && targetObj is EntityReference target))
             {
                 trace.Trace("Target parameter is missing or not an EntityReference. Exiting.");
                 return;
             }
 
-            // Ensure it's the Agreement entity
             if (!string.Equals(target.LogicalName, AgreementEntityName, StringComparison.OrdinalIgnoreCase))
             {
-                trace.Trace($"Target entity: {target.LogicalName}. Plugin only runs for {AgreementEntityName}. Exiting.");
+                trace.Trace($"Target entity: {target.LogicalName}. Exiting plugin.");
                 return;
             }
 
@@ -45,14 +44,24 @@ namespace Plugins
             {
                 var service = serviceFactory.CreateOrganizationService(context.UserId);
 
-                // Create delete log record
-                var deleteLog = new Entity(DeleteLogEntityName)
+                // Create delete log entity
+                var deleteLog = new Entity(DeleteLogEntityName);
+
+                // Assign fields carefully
+                if (deleteLog.Attributes.Contains("gif_entityid"))
                 {
-                    ["gif_entityid"] = target.Id,                         // GUID only
-                    ["gif_entityname"] = new OptionSetValue(AgreementOptionSetValue),
-                    ["gif_name"] = $"Agreement Deleted - {target.Id}",
-                    ["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId)
-                };
+                    // If field is Lookup type
+                    deleteLog["gif_entityid"] = new EntityReference(AgreementEntityName, target.Id);
+                }
+                else
+                {
+                    // If field is plain GUID
+                    deleteLog["gif_entityid"] = target.Id;
+                }
+
+                deleteLog["gif_entityname"] = new OptionSetValue(AgreementOptionSetValue);
+                deleteLog["gif_name"] = $"Agreement Deleted - {target.Id}";
+                deleteLog["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId);
 
                 service.Create(deleteLog);
                 trace.Trace($"Delete log created for Agreement ID: {target.Id}");
@@ -60,10 +69,10 @@ namespace Plugins
             catch (Exception ex)
             {
                 trace.Trace($"Error creating delete log: {ex.Message}");
-                throw new InvalidPluginExecutionException("Error while creating delete log record.", ex);
+                throw new InvalidPluginExecutionException("Error creating Agreement delete log.", ex);
             }
 
-            trace.Trace("AgreementDeleteLogPlugin execution completed successfully.");
+            trace.Trace("AgreementDeleteLogPlugin completed.");
         }
     }
 }
