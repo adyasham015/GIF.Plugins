@@ -20,14 +20,14 @@ namespace Plugins
 
             trace.Trace("AgreementDeleteLogPlugin execution started.");
 
-            // Ensure it's a Delete message
+            // Only execute on Delete
             if (!string.Equals(context.MessageName, "Delete", StringComparison.OrdinalIgnoreCase))
             {
                 trace.Trace($"MessageName: {context.MessageName}. Exiting plugin (only runs on Delete).");
                 return;
             }
 
-            // Ensure Target exists and is an EntityReference
+            // Validate target
             if (!(context.InputParameters.TryGetValue("Target", out var targetObj) && targetObj is EntityReference target))
             {
                 trace.Trace("Target parameter is missing or not an EntityReference. Exiting.");
@@ -48,9 +48,10 @@ namespace Plugins
                 // Create delete log record
                 var deleteLog = new Entity(DeleteLogEntityName)
                 {
-                    ["gif_entityid"] = target.Id, // Agreement GUID
+                    ["gif_entityid"] = target.Id,                         // GUID only
                     ["gif_entityname"] = new OptionSetValue(AgreementOptionSetValue),
-                    ["gif_name"] = $"Agreement Deleted - {target.Id}"
+                    ["gif_name"] = $"Agreement Deleted - {target.Id}",
+                    ["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId)
                 };
 
                 service.Create(deleteLog);
