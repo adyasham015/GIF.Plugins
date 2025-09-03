@@ -13,6 +13,9 @@ namespace Plugins
         private const int CustomerGroupOptionSetValue = 805640001;
         private const int CustomerAssetOptionSetValue = 805640002;
         private const int AccountOptionSetValue = 805640010;
+        private const int IncidentOptionSetValue = 805640008;
+        private const int PriorityOptionSetValue = 805640011;
+        private const int ProjectOptionSetValue = 805640012;
 
         public void Execute(IServiceProvider serviceProvider)
         {
@@ -48,6 +51,15 @@ namespace Plugins
                     case "account":
                         HandleAccountDelete(service, tracingService, context, target);
                         break;
+                    case "incident":
+                        HandleIncidentDelete(service, tracingService, context, target);
+                        break;
+                    case "priority":
+                        HandlePriorityDelete(service, tracingService, context, target);
+                        break;
+                    case "project": 
+                        HandleProjectDelete(service, tracingService, context, target);
+                        break;
                     default:
                         tracingService.Trace($"Entity {target.LogicalName} not handled.");
                         break;
@@ -71,21 +83,16 @@ namespace Plugins
             {
                 tracingService.Trace($"[DeleteLogPlugin] Delete triggered for systemuser {target.Id}");
 
-                // Optional: check if user is part of Gif_Team before removing
-                // For simplicity, assuming removal triggered the plugin
-                var entityId = target.Id;
-                var entityName = "systemuser";
-
                 var deleteLog = new Entity(DeleteLogEntityName)
                 {
-                    ["gif_entityid"] = entityId.ToString(),               // primary key = entity id
-                    ["gif_entityname"] = new OptionSetValue(UserOptionSetValue), // entity type
-                    ["gif_name"] = $"User Removed from Gif_Team - {entityId}",    // descriptive name
+                    ["gif_entityid"] = target.Id.ToString(),
+                    ["gif_entityname"] = new OptionSetValue(UserOptionSetValue),
+                    ["gif_name"] = $"User Removed from Gif_Team - {target.Id}",
                     ["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId)
                 };
 
                 service.Create(deleteLog);
-                tracingService.Trace($"[DeleteLogPlugin] Delete log successfully created for systemuser {entityId}");
+                tracingService.Trace($"[DeleteLogPlugin] Delete log successfully created for systemuser {target.Id}");
             }
             catch (Exception ex)
             {
@@ -156,6 +163,53 @@ namespace Plugins
             };
             service.Create(deleteLog);
             tracingService.Trace($"Delete log created for Account {target.Id}");
+        }
+
+        // -----------------------------
+        // Incident Delete (NEW)
+        // -----------------------------
+        private void HandleIncidentDelete(IOrganizationService service, ITracingService tracingService, IPluginExecutionContext context, EntityReference target)
+        {
+            var deleteLog = new Entity(DeleteLogEntityName)
+            {
+                ["gif_entityid"] = target.Id.ToString(),
+                ["gif_entityname"] = new OptionSetValue(IncidentOptionSetValue),
+                ["gif_name"] = $"Incident Deleted - {target.Id}",
+                ["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId)
+            };
+            service.Create(deleteLog);
+            tracingService.Trace($"Delete log created for Incident {target.Id}");
+        }
+        // -----------------------------
+        // Priority Delete
+        // -----------------------------
+        private void HandlePriorityDelete(IOrganizationService service, ITracingService tracingService, IPluginExecutionContext context, EntityReference target)
+        {
+            var deleteLog = new Entity(DeleteLogEntityName)
+            {
+                ["gif_entityid"] = target.Id.ToString(),
+                ["gif_entityname"] = new OptionSetValue(PriorityOptionSetValue),
+                ["gif_name"] = $"Priority Deleted - {target.Id}",
+                ["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId)
+            };
+            service.Create(deleteLog);
+            tracingService.Trace($"Delete log created for Priority {target.Id}");
+        }
+
+        // -----------------------------
+        // Project Delete
+        // -----------------------------
+        private void HandleProjectDelete(IOrganizationService service, ITracingService tracingService, IPluginExecutionContext context, EntityReference target)
+        {
+            var deleteLog = new Entity(DeleteLogEntityName)
+            {
+                ["gif_entityid"] = target.Id.ToString(),
+                ["gif_entityname"] = new OptionSetValue(ProjectOptionSetValue),
+                ["gif_name"] = $"Project Deleted - {target.Id}",
+                ["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId)
+            };
+            service.Create(deleteLog);
+            tracingService.Trace($"Delete log created for Project {target.Id}");
         }
     }
 }
