@@ -51,19 +51,59 @@ namespace Plugins
                     case "account":
                         HandleAccountDelete(service, tracingService, context, target);
                         break;
-                    case "incident":
+                    case "incident": // if your entity name for Incident / Case is "incident"
                         HandleIncidentDelete(service, tracingService, context, target);
                         break;
                     case "priority":
                         HandlePriorityDelete(service, tracingService, context, target);
                         break;
-                    case "project": 
+                    case "project":
                         HandleProjectDelete(service, tracingService, context, target);
+                        break;
+                    case "workorder":
+                        HandleWorkOrderDelete(service, tracingService, context, target);
+                        break;
+                    case "contact":
+                        HandleContactDelete(service, tracingService, context, target);
+                        break;
+                    case "lead":
+                        HandleLeadDelete(service, tracingService, context, target);
+                        break;
+                    case "pricelevel": // Pricelist
+                        HandlePriceListDelete(service, tracingService, context, target);
+                        break;
+                    case "productpricelevel": // Pricelist Item
+                        HandlePriceListItemDelete(service, tracingService, context, target);
+                        break;
+                    case "activitymonitor":
+                        HandleActivityMonitorDelete(service, tracingService, context, target);
+                        break;
+                    case "gif_pricerequest":
+                        HandlePriceRequestDelete(service, tracingService, context, target);
+                        break;
+                    case "msdyn_productinventory":
+                        HandleProductInventoryDelete(service, tracingService, context, target);
+                        break;
+                    case "product":
+                        HandleProductDelete(service, tracingService, context, target);
+                        break;
+                    case "msdyn_resolution":
+                        HandleResolutionDelete(service, tracingService, context, target);
+                        break;
+                    case "gif_reservationrequest":
+                        HandleReservationRequestDelete(service, tracingService, context, target);
+                        break;
+                    case "appointment":
+                        HandleAppointmentDelete(service, tracingService, context, target);
+                        break;
+                    case "gif_customertransaction":
+                        HandleCustomerTransactionDelete(service, tracingService, context, target);
                         break;
                     default:
                         tracingService.Trace($"Entity {target.LogicalName} not handled.");
                         break;
                 }
+
             }
             catch (Exception ex)
             {
@@ -210,6 +250,225 @@ namespace Plugins
             };
             service.Create(deleteLog);
             tracingService.Trace($"Delete log created for Project {target.Id}");
+        }
+        // -----------------------------
+        // Work Order Delete
+        // -----------------------------
+        private void HandleWorkOrderDelete(IOrganizationService service, ITracingService tracingService, IPluginExecutionContext context, EntityReference target)
+        {
+            var deleteLog = new Entity(DeleteLogEntityName)
+            {
+                ["gif_entityid"] = target.Id.ToString(),
+                ["gif_entityname"] = new OptionSetValue(805640015), // Work Order
+                ["gif_name"] = $"Work Order Deleted - {target.Id}",
+                ["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId)
+            };
+            service.Create(deleteLog);
+            tracingService.Trace($"Delete log created for Work Order {target.Id}");
+        }
+        // -----------------------------
+        // Contact Delete
+        // -----------------------------
+        private void HandleContactDelete(IOrganizationService service, ITracingService tracingService, IPluginExecutionContext context, EntityReference target)
+        {
+            var deleteLog = new Entity(DeleteLogEntityName)
+            {
+                ["gif_entityid"] = target.Id.ToString(),
+                ["gif_entityname"] = new OptionSetValue(805640014), // Contact
+                ["gif_name"] = $"Contact Deleted - {target.Id}",
+                ["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId)
+            };
+            service.Create(deleteLog);
+            tracingService.Trace($"Delete log created for Contact {target.Id}");
+        }
+
+        // -----------------------------
+        // Lead Delete
+        // -----------------------------
+        private void HandleLeadDelete(IOrganizationService service, ITracingService tracingService, IPluginExecutionContext context, EntityReference target)
+        {
+            var deleteLog = new Entity(DeleteLogEntityName)
+            {
+                ["gif_entityid"] = target.Id.ToString(),
+                ["gif_entityname"] = new OptionSetValue(805640013), // Lead
+                ["gif_name"] = $"Lead Deleted - {target.Id}",
+                ["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId)
+            };
+            service.Create(deleteLog);
+            tracingService.Trace($"Delete log created for Lead {target.Id}");
+        }
+
+        // -----------------------------
+        // Price List Item Delete
+        // -----------------------------
+        private void HandlePriceListItemDelete(IOrganizationService service, ITracingService tracingService, IPluginExecutionContext context, EntityReference target)
+        {
+            var deleteLog = new Entity(DeleteLogEntityName)
+            {
+                ["gif_entityid"] = target.Id.ToString(),
+                ["gif_entityname"] = new OptionSetValue(805640005), // Price List Item
+                ["gif_name"] = $"Price List Item Deleted - {target.Id}",
+                ["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId)
+            };
+            service.Create(deleteLog);
+            tracingService.Trace($"Delete log created for Price List Item {target.Id}");
+        }
+
+        // -----------------------------
+        // Price List Delete
+        // -----------------------------
+        private void HandlePriceListDelete(IOrganizationService service, ITracingService tracingService, IPluginExecutionContext context, EntityReference target)
+        {
+            var deleteLog = new Entity(DeleteLogEntityName)
+            {
+                ["gif_entityid"] = target.Id.ToString(),
+                ["gif_entityname"] = new OptionSetValue(805640004), // Price List
+                ["gif_name"] = $"Price List Deleted - {target.Id}",
+                ["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId)
+            };
+            service.Create(deleteLog);
+            tracingService.Trace($"Delete log created for Price List {target.Id}");
+        }
+        // -----------------------------
+        // Activity Monitor Delete
+        // -----------------------------
+        private void HandleActivityMonitorDelete(
+            IOrganizationService service,
+            ITracingService tracingService,
+            IPluginExecutionContext context,
+            EntityReference target)
+        {
+            try
+            {
+                tracingService.Trace($"[DeleteLogPlugin] Delete triggered for Activity Monitor {target.Id}");
+
+                var deleteLog = new Entity(DeleteLogEntityName)
+                {
+                    ["gif_entityid"] = target.Id.ToString(),                      // primary key = entity id
+                    ["gif_entityname"] = new OptionSetValue(805640016),          // OptionSet value for Activity Monitor
+                    ["gif_name"] = $"Activity Monitor Deleted - {target.Id}",    // descriptive name
+                    ["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId)
+                };
+
+                service.Create(deleteLog);
+                tracingService.Trace($"[DeleteLogPlugin] Delete log successfully created for Activity Monitor {target.Id}");
+            }
+            catch (Exception ex)
+            {
+                tracingService.Trace($"[DeleteLogPlugin] Error in HandleActivityMonitorDelete: {ex.Message}");
+                throw new InvalidPluginExecutionException("Error while creating delete log record for Activity Monitor.", ex);
+            }
+        }
+        // -----------------------------
+        // Price Request Delete
+        // -----------------------------
+        private void HandlePriceRequestDelete(IOrganizationService service, ITracingService tracingService, IPluginExecutionContext context, EntityReference target)
+        {
+            var deleteLog = new Entity(DeleteLogEntityName)
+            {
+                ["gif_entityid"] = target.Id.ToString(),
+                ["gif_entityname"] = new OptionSetValue(805640017),
+                ["gif_name"] = $"Price Request Deleted - {target.Id}",
+                ["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId)
+            };
+            service.Create(deleteLog);
+            tracingService.Trace($"Delete log created for Price Request {target.Id}");
+        }
+
+        // -----------------------------
+        // Product Inventory Delete
+        // -----------------------------
+        private void HandleProductInventoryDelete(IOrganizationService service, ITracingService tracingService, IPluginExecutionContext context, EntityReference target)
+        {
+            var deleteLog = new Entity(DeleteLogEntityName)
+            {
+                ["gif_entityid"] = target.Id.ToString(),
+                ["gif_entityname"] = new OptionSetValue(805640018),
+                ["gif_name"] = $"Product Inventory Deleted - {target.Id}",
+                ["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId)
+            };
+            service.Create(deleteLog);
+            tracingService.Trace($"Delete log created for Product Inventory {target.Id}");
+        }
+
+        // -----------------------------
+        // Product Delete
+        // -----------------------------
+        private void HandleProductDelete(IOrganizationService service, ITracingService tracingService, IPluginExecutionContext context, EntityReference target)
+        {
+            var deleteLog = new Entity(DeleteLogEntityName)
+            {
+                ["gif_entityid"] = target.Id.ToString(),
+                ["gif_entityname"] = new OptionSetValue(805640019),
+                ["gif_name"] = $"Product Deleted - {target.Id}",
+                ["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId)
+            };
+            service.Create(deleteLog);
+            tracingService.Trace($"Delete log created for Product {target.Id}");
+        }
+
+        // -----------------------------
+        // Resolution Delete
+        // -----------------------------
+        private void HandleResolutionDelete(IOrganizationService service, ITracingService tracingService, IPluginExecutionContext context, EntityReference target)
+        {
+            var deleteLog = new Entity(DeleteLogEntityName)
+            {
+                ["gif_entityid"] = target.Id.ToString(),
+                ["gif_entityname"] = new OptionSetValue(805640020),
+                ["gif_name"] = $"Resolution Deleted - {target.Id}",
+                ["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId)
+            };
+            service.Create(deleteLog);
+            tracingService.Trace($"Delete log created for Resolution {target.Id}");
+        }
+
+        // -----------------------------
+        // Reservation Request Delete
+        // -----------------------------
+        private void HandleReservationRequestDelete(IOrganizationService service, ITracingService tracingService, IPluginExecutionContext context, EntityReference target)
+        {
+            var deleteLog = new Entity(DeleteLogEntityName)
+            {
+                ["gif_entityid"] = target.Id.ToString(),
+                ["gif_entityname"] = new OptionSetValue(805640021),
+                ["gif_name"] = $"Reservation Request Deleted - {target.Id}",
+                ["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId)
+            };
+            service.Create(deleteLog);
+            tracingService.Trace($"Delete log created for Reservation Request {target.Id}");
+        }
+
+        // -----------------------------
+        // Appointment Delete
+        // -----------------------------
+        private void HandleAppointmentDelete(IOrganizationService service, ITracingService tracingService, IPluginExecutionContext context, EntityReference target)
+        {
+            var deleteLog = new Entity(DeleteLogEntityName)
+            {
+                ["gif_entityid"] = target.Id.ToString(),
+                ["gif_entityname"] = new OptionSetValue(805640022),
+                ["gif_name"] = $"Appointment Deleted - {target.Id}",
+                ["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId)
+            };
+            service.Create(deleteLog);
+            tracingService.Trace($"Delete log created for Appointment {target.Id}");
+        }
+
+        // -----------------------------
+        // Customer Transaction Delete
+        // -----------------------------
+        private void HandleCustomerTransactionDelete(IOrganizationService service, ITracingService tracingService, IPluginExecutionContext context, EntityReference target)
+        {
+            var deleteLog = new Entity(DeleteLogEntityName)
+            {
+                ["gif_entityid"] = target.Id.ToString(),
+                ["gif_entityname"] = new OptionSetValue(0), // Replace 0 if CustomerTransaction has a specific OptionSetValue
+                ["gif_name"] = $"Customer Transaction Deleted - {target.Id}",
+                ["ownerid"] = new EntityReference("systemuser", context.InitiatingUserId)
+            };
+            service.Create(deleteLog);
+            tracingService.Trace($"Delete log created for Customer Transaction {target.Id}");
         }
     }
 }
