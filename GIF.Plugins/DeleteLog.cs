@@ -51,7 +51,7 @@ namespace Plugins
                     case "account":
                         HandleAccountDelete(service, tracingService, context, target);
                         break;
-                    case "incident": // if your entity name for Incident / Case is "incident"
+                    case "incident": \
                         HandleIncidentDelete(service, tracingService, context, target);
                         break;
                     case "priority":
@@ -69,10 +69,10 @@ namespace Plugins
                     case "lead":
                         HandleLeadDelete(service, tracingService, context, target);
                         break;
-                    case "pricelevel": // Pricelist
+                    case "pricelevel": 
                         HandlePriceListDelete(service, tracingService, context, target);
                         break;
-                    case "productpricelevel": // Pricelist Item
+                    case "productpricelevel": 
                         HandlePriceListItemDelete(service, tracingService, context, target);
                         break;
                     case "activitymonitor":
@@ -470,5 +470,6 @@ namespace Plugins
             service.Create(deleteLog);
             tracingService.Trace($"Delete log created for Customer Transaction {target.Id}");
         }
+
     }
 }
